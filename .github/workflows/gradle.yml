@@ -58,7 +58,7 @@ jobs:
       - uses: actions/checkout@v3
       - id: generate-cache-key
         name: Generate cache key
-        run: echo "cache_key=gradle-build-${{ hashFiles(${{ inputs.hash_pattern }}) }}" >> $GITHUB_OUTPUT
+        run: echo "cache_key=gradle-build-${{ hashFiles(inputs.hash_pattern) }}" >> $GITHUB_OUTPUT
       - name: Try to restore build output
         uses: actions/cache/restore@v3
         id: restore-build-output
