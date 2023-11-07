@@ -48,9 +48,6 @@ on:
         description: The cache key for restoring the Gradle build output
         value: ${{ jobs.build.outputs.cache_key }}
 
-permissions:
-  contents: read
-
 jobs:
   build:
     runs-on: ubuntu-latest
