@@ -38,9 +38,9 @@ on:
         default: |
           **/**.kts
           buildSrc/**
-          **/src/main/**/*.java
-          **/src/main/**/*.kt
-          **/src/main/resources/**
+          **/src/{main,test}/**/*.{java,kt}
+          **/src/{main,test}/resources/**
+          **/gradle.properties
     outputs:
       path:
         description: The paths cached
