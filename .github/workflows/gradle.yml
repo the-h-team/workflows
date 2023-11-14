@@ -56,7 +56,7 @@ on:
           "buildSrc/**",
           "**/src/{main,test}/**/*.{java,kt}",
           "**/src/{main,test}/resources/**",
-          "**/gradle.properties""
+          "**/gradle.properties"
           ]
     outputs:
       path:
