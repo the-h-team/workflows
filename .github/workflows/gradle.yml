@@ -51,11 +51,11 @@ on:
         required: false
         type: string
         default: |
-          **/**.kts
-          buildSrc/**
-          **/src/{main,test}/**/*.{java,kt}
-          **/src/{main,test}/resources/**
-          **/gradle.properties
+          '**/**.kts',
+          'buildSrc/**',
+          '**/src/{main,test}/**/*.{java,kt}',
+          '**/src/{main,test}/resources/**',
+          '**/gradle.properties'
     outputs:
       path:
         description: The paths cached
