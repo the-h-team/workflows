@@ -51,11 +51,11 @@ on:
         required: false
         type: string
         default: |
-          '**/**.kts',
-          'buildSrc/**',
-          '**/src/{main,test}/**/*.{java,kt}',
-          '**/src/{main,test}/resources/**',
-          '**/gradle.properties'
+          **/**.kts
+          buildSrc/**
+          **/src/{main,test}/**/*.{java,kt}
+          **/src/{main,test}/resources/**
+          **/gradle.properties
     outputs:
       path:
         description: The paths cached
@@ -71,10 +71,11 @@ jobs:
       cache_key: ${{ steps.generate-cache-key.outputs.cache_key }}
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
       - id: generate-cache-key
         name: Generate cache key
-        run: echo "cache_key=gradle-build-${{ hashFiles(inputs.hash_pattern) }}" >> $GITHUB_OUTPUT
+        run: echo "cache_key=gradle-build-${{ hashFiles(fromJSON(inputs.hash_pattern)) }}" >> $GITHUB_OUTPUT
       - name: Try to restore build output
         uses: actions/cache/restore@v3
         id: restore-build-output
