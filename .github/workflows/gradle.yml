@@ -19,6 +19,7 @@
 # You can customize the Gradle command with the `gradle_args` input (defaults to 'build').
 # Inputs:
 #     gradle_args: String - The arguments to pass to Gradle. Defaults to `'build'`.
+#     cache_save: boolean - Whether to cache the build. Defaults to `true`.
 #     path: String - The paths to be cached. Defaults to `'**/build/libs/*.jar', '!buildSrc'`.
 #     hash_pattern: String - Allows you to customize the files used to generate the cache key. See implementation notes for more details.
 # Outputs:
