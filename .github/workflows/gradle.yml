@@ -99,7 +99,8 @@ jobs:
         uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # v2.6.0
         with:
           arguments: ${{ inputs.gradle_args }}
-      - name: Cache new build output
+      - id: cache_save
+        name: Cache new build output
         if: steps.restore-build-output.outputs.cache-hit != 'true' && inputs.cache_save
         uses: actions/cache/save@v3
         with:
