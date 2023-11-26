@@ -29,7 +29,7 @@
 #   This should allow a cache hit on simple/cosmetic changes to the repository, such as to the README.md file.
 #
 
-name: Gradle Cached Build
+name: Gradle Cache Build
 
 on:
   workflow_call:
@@ -39,6 +39,11 @@ on:
         required: false
         type: string
         default: build
+      cache_save:
+        description: Whether to cache the build
+        required: false
+        type: boolean
+        default: true
       path:
         description: The paths to cache
         required: false
@@ -95,7 +100,7 @@ jobs:
         with:
           arguments: ${{ inputs.gradle_args }}
       - name: Cache new build output
-        if: steps.restore-build-output.outputs.cache-hit != 'true'
+        if: steps.restore-build-output.outputs.cache-hit != 'true' && inputs.cache_save
         uses: actions/cache/save@v3
         with:
           key: ${{ steps.generate-cache-key.outputs.cache_key }}
