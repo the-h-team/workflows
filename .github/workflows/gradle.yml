@@ -22,6 +22,9 @@
 #     cache_save: boolean - Whether to cache the build. Defaults to `true`.
 #     path: String - The paths to be cached. Defaults to `'**/build/libs/*.jar', '!buildSrc'`.
 #     hash_pattern: String - Allows you to customize the files used to generate the cache key. See implementation notes for more details.
+#     packages_user: String - Allows you to set the user associated with the `read_token` secret. Defaults to `github.actor`.
+# Secrets (Inputs):
+#     read_token: (String) - An optional token used to access private GitHub Packages.
 # Outputs:
 #     path: String - The paths cached; same as the `path` input.
 #     cache_key: String - The cache key for restoring Gradle's build output.
@@ -63,6 +66,15 @@ on:
           **/src/*/**/kotlin/**.kt
           **/src/*/resources/**
           **/gradle.properties
+      packages_user:
+        description: The username authenticating to GitHub Packages with read_token
+        required: false
+        type: string
+        default: ${{ github.actor }}
+    secrets:
+      read_token:
+        description: A token so that private artifacts may be read from GitHub Packages
+        required: false
     outputs:
       path:
         description: The paths cached
@@ -95,8 +107,12 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+      - name: Set read-only token
+        if: secrets.read_token
+        run: echo "READ_TOKEN=${{ secrets.read_token }}" >> "$GITHUB_ENV"
       - name: Gradle [${{ inputs.gradle_args }}]
         env:
+          PACKAGES_USER: ${{ inputs.packages_user }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: steps.restore-build-output.outputs.cache-hit != 'true'
         uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # v2.6.0
