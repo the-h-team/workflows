@@ -60,10 +60,10 @@ on:
         required: false
         type: string
         default: |
-          **/**.kts
+          **/*.kts
           buildSrc/**
-          **/src/*/**/java/**.java
-          **/src/*/**/kotlin/**.kt
+          **/src/*/**/java/**/*.java
+          **/src/*/**/kotlin/**/*.kt
           **/src/*/resources/**
           **/gradle.properties
       packages_user:
