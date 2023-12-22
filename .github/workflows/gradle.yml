@@ -21,7 +21,6 @@
 #     gradle_args: String - The arguments to pass to Gradle. Defaults to `'build'`.
 #     cache_save: boolean - Whether to cache the build. Defaults to `true`.
 #     path: String - The paths to be cached. Defaults to `'**/build/libs/*.jar', '!buildSrc'`.
-#     hash_pattern: String - Allows you to customize the files used to generate the cache key. See implementation notes for more details.
 #     packages_user: String - Allows you to set the user associated with the `read_token` secret. Defaults to `github.actor`.
 # Secrets (Inputs):
 #     read_token: (String) - An optional token used to access private GitHub Packages.
@@ -55,17 +54,6 @@ on:
         default: |
           **/build/libs/*.jar
           !buildSrc/**
-      hash_pattern:
-        description: The hash pattern(s) to use for generating the cache key
-        required: false
-        type: string
-        default: |
-          **/**.kts
-          buildSrc/**
-          **/src/*/**/java/**.java
-          **/src/*/**/kotlin/**.kt
-          **/src/*/resources/**
-          **/gradle.properties
       packages_user:
         description: The username authenticating to GitHub Packages with read_token
         required: false
@@ -94,7 +82,7 @@ jobs:
         uses: actions/checkout@v3
       - id: generate-cache-key
         name: Generate cache key
-        run: echo "cache_key=gradle-${{ inputs.gradle_args }}-${{ hashFiles(inputs.hash_pattern) }}" >> $GITHUB_OUTPUT
+        run: echo "cache_key=gradle-${{ inputs.gradle_args }}-${{ hashFiles('**/**.kts', 'buildSrc/**', '**/src/*/**/java/**.java', '**/src/*/**/kotlin/**.kt', '**/src/*/resources/**', '**/gradle.properties') }}" >> $GITHUB_OUTPUT
       - name: Try to restore build output
         uses: actions/cache/restore@v3
         id: restore-build-output
