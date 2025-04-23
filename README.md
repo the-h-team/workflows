@@ -10,8 +10,8 @@ All workflows will be made available under the Apache 2.0 license.
 #### [`gradle.yml`](./.github/workflows/gradle.yml)
 This workflow is used to build Sanctum projects that use Gradle.
 
-[`gradle-build-action`](https://github.com/gradle/gradle-build-action) is used to speed up builds by caching
+[`setup-gradle`](https://github.com/gradle/actions?tab=readme-ov-file#the-setup-gradle-action) is used to speed up builds by caching
 Gradle's runtime environment, once prepared. Gradle's distribution and cache are saved to repository cache.
 
 By default, this workflow also caches the outputs of the build. This can be augmented with configuration. 
-##### Copyright 2023 Sanctum Team
+##### Copyright 2023-2025 Sanctum Team

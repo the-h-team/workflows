@@ -107,15 +107,16 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+      - name: Setup Gradle
+        if: steps.restore-build-output.outputs.cache-hit != 'true'
+        uses: gradle/actions/setup-gradle@ac2d340dc04d9e1113182899e983b5400c17cda1 # v3.5.0
       - name: Gradle [${{ inputs.gradle_args }}]
         env:
           READ_TOKEN: ${{ secrets.read_token }}
           PACKAGES_USER: ${{ inputs.packages_user }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: steps.restore-build-output.outputs.cache-hit != 'true'
-        uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # v2.6.0
-        with:
-          arguments: ${{ inputs.gradle_args }}
+        run: ./gradlew ${{ inputs.gradle_args }}
       - id: cache_save
         name: Cache new build output
         if: steps.restore-build-output.outputs.cache-hit != 'true' && inputs.cache_save
