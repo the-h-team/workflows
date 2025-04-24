@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Sanctum
+# Copyright 2023-2025 Sanctum
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 # Inputs:
 #     gradle_args: String - The arguments to pass to Gradle. Defaults to `'build'`.
 #     cache_save: boolean - Whether to cache the build. Defaults to `true`.
+#     restore: boolean - Whether to restore from cache. Defaults to `false`.
 #     path: String - The paths to be cached. Defaults to `'**/build/libs/*.jar', '!buildSrc'`.
 #     hash_pattern: String - Allows you to customize the files used to generate the cache key. See implementation notes for more details.
 #     packages_user: String - Allows you to set the user associated with the `read_token` secret. Defaults to `github.actor`.
@@ -48,6 +49,11 @@ on:
         required: false
         type: boolean
         default: true
+      restore:
+        description: Whether to restore from cache
+        required: false
+        type: boolean
+        default: false
       path:
         description: The paths to cache
         required: false
@@ -79,6 +85,9 @@ on:
       path:
         description: The paths cached
         value: ${{ inputs.path }}
+      files_hash:
+        description: The hash of the files
+        value: ${{ jobs.build.outputs.files_hash }}
       cache_key:
         description: The cache key for restoring the Gradle build output
         value: ${{ jobs.build.outputs.cache_key }}
@@ -87,39 +96,52 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
+      files_hash: ${{ steps.hash.outputs.files_hash }}
       cache_key: ${{ steps.generate-cache-key.outputs.cache_key }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - id: hash
+        name: Generate files hash
+        run: echo "files_hash=${{ hashFiles(inputs.hash_pattern) }}" >> $GITHUB_OUTPUT
       - id: generate-cache-key
         name: Generate cache key
-        run: echo "cache_key=gradle-${{ inputs.gradle_args }}-${{ hashFiles(inputs.hash_pattern) }}" >> $GITHUB_OUTPUT
-      - name: Try to restore build output
+        run: echo "cache_key=gradle-${{ steps.hash.outputs.files_hash }}-${{ inputs.gradle_args }}" >> $GITHUB_OUTPUT
+      - name: Check cache
         uses: actions/cache/restore@v3
-        id: restore-build-output
+        id: check-cache
         with:
           key: ${{ steps.generate-cache-key.outputs.cache_key }}
+          lookup-only: ${{ !inputs.restore }}
+          path: ${{ inputs.path }}
+      - name: Restore cache
+        if: ${{ inputs.restore }}
+        uses: actions/cache/restore@v3
+        id: restore-cache
+        with:
+          key: ${{ steps.generate-cache-key.outputs.cache_key }}
+          restore-keys: gradle-${{ steps.hash.outputs.files_hash }}-
           path: ${{ inputs.path }}
       - name: Set up JDK 17
-        if: steps.restore-build-output.outputs.cache-hit != 'true'
+        if: steps.check-cache.outputs.cache-hit != 'true'
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
       - name: Setup Gradle
-        if: steps.restore-build-output.outputs.cache-hit != 'true'
+        if: steps.check-cache.outputs.cache-hit != 'true'
         uses: gradle/actions/setup-gradle@v4.3.1
       - name: Gradle [${{ inputs.gradle_args }}]
         env:
           READ_TOKEN: ${{ secrets.read_token }}
           PACKAGES_USER: ${{ inputs.packages_user }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: steps.restore-build-output.outputs.cache-hit != 'true'
+        if: steps.check-cache.outputs.cache-hit != 'true'
         run: ./gradlew ${{ inputs.gradle_args }}
       - id: cache_save
         name: Cache new build output
-        if: steps.restore-build-output.outputs.cache-hit != 'true' && inputs.cache_save
+        if: steps.check-cache.outputs.cache-hit != 'true' && inputs.cache_save
         uses: actions/cache/save@v3
         with:
           key: ${{ steps.generate-cache-key.outputs.cache_key }}
