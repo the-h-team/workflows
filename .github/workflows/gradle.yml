@@ -118,30 +118,30 @@ jobs:
       - name: Restore cache
         if: ${{ inputs.restore }}
         uses: actions/cache/restore@v3
-        id: restore-build-output
+        id: restore-cache
         with:
           key: ${{ steps.generate-cache-key.outputs.cache_key }}
           restore-keys: gradle-${{ steps.hash.outputs.files_hash }}-
           path: ${{ inputs.path }}
       - name: Set up JDK 17
-        if: steps.restore-build-output.outputs.cache-hit != 'true'
+        if: steps.check-cache.outputs.cache-hit != 'true'
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
       - name: Setup Gradle
-        if: steps.restore-build-output.outputs.cache-hit != 'true'
+        if: steps.check-cache.outputs.cache-hit != 'true'
         uses: gradle/actions/setup-gradle@v4.3.1
       - name: Gradle [${{ inputs.gradle_args }}]
         env:
           READ_TOKEN: ${{ secrets.read_token }}
           PACKAGES_USER: ${{ inputs.packages_user }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: steps.restore-build-output.outputs.cache-hit != 'true'
+        if: steps.check-cache.outputs.cache-hit != 'true'
         run: ./gradlew ${{ inputs.gradle_args }}
       - id: cache_save
         name: Cache new build output
-        if: steps.restore-build-output.outputs.cache-hit != 'true' && inputs.cache_save
+        if: steps.check-cache.outputs.cache-hit != 'true' && inputs.cache_save
         uses: actions/cache/save@v3
         with:
           key: ${{ steps.generate-cache-key.outputs.cache_key }}
