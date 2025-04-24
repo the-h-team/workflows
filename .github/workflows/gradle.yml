@@ -59,8 +59,9 @@ on:
         required: false
         type: string
         default: |
-          **/build/libs/*.jar
-          !buildSrc/**
+          **/build/**
+          .gradle/**
+          !**/src/*/**/build/**
       hash_pattern:
         description: The hash pattern(s) to use for generating the cache key
         required: false
