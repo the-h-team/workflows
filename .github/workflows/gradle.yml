@@ -20,6 +20,7 @@
 # Inputs:
 #     gradle_args: String - The arguments to pass to Gradle. Defaults to `'build'`.
 #     cache_save: boolean - Whether to cache the build. Defaults to `true`.
+#     restore: boolean - Whether to restore from cache. Defaults to `false`.
 #     path: String - The paths to be cached. Defaults to `'**/build/libs/*.jar', '!buildSrc'`.
 #     hash_pattern: String - Allows you to customize the files used to generate the cache key. See implementation notes for more details.
 #     packages_user: String - Allows you to set the user associated with the `read_token` secret. Defaults to `github.actor`.
@@ -48,6 +49,11 @@ on:
         required: false
         type: boolean
         default: true
+      restore:
+        description: Whether to restore from cache
+        required: false
+        type: boolean
+        default: false
       path:
         description: The paths to cache
         required: false
@@ -102,7 +108,15 @@ jobs:
       - id: generate-cache-key
         name: Generate cache key
         run: echo "cache_key=gradle-${{ steps.hash.outputs.files_hash }}-${{ inputs.gradle_args }}" >> $GITHUB_OUTPUT
-      - name: Try to restore cache
+      - name: Check cache
+        uses: actions/cache/restore@v3
+        id: check-cache
+        with:
+          key: ${{ steps.generate-cache-key.outputs.cache_key }}
+          lookup-only: ${{ !inputs.restore }}
+          path: ${{ inputs.path }}
+      - name: Restore cache
+        if: ${{ inputs.restore }}
         uses: actions/cache/restore@v3
         id: restore-build-output
         with:
