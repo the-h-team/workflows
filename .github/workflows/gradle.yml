@@ -79,6 +79,9 @@ on:
       path:
         description: The paths cached
         value: ${{ inputs.path }}
+      files_hash:
+        description: The hash of the files
+        value: ${{ jobs.build.outputs.files_hash }}
       cache_key:
         description: The cache key for restoring the Gradle build output
         value: ${{ jobs.build.outputs.cache_key }}
@@ -87,19 +90,24 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
+      files_hash: ${{ steps.hash.outputs.files_hash }}
       cache_key: ${{ steps.generate-cache-key.outputs.cache_key }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - id: hash
+        name: Generate files hash
+        run: echo "files_hash=${{ hashFiles(inputs.hash_pattern }}" >> $GITHUB_OUTPUT
       - id: generate-cache-key
         name: Generate cache key
-        run: echo "cache_key=gradle-${{ inputs.gradle_args }}-${{ hashFiles(inputs.hash_pattern) }}" >> $GITHUB_OUTPUT
-      - name: Try to restore build output
+        run: echo "cache_key=gradle-${{ steps.hash.outputs.files_hash }}-${{ inputs.gradle_args }}" >> $GITHUB_OUTPUT
+      - name: Try to restore cache
         uses: actions/cache/restore@v3
         id: restore-build-output
         with:
           key: ${{ steps.generate-cache-key.outputs.cache_key }}
+          restore-keys: gradle-${{ steps.hash.outputs.files_hash }}-
           path: ${{ inputs.path }}
       - name: Set up JDK 17
         if: steps.restore-build-output.outputs.cache-hit != 'true'
