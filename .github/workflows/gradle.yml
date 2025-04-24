@@ -109,7 +109,7 @@ jobs:
           distribution: 'temurin'
       - name: Setup Gradle
         if: steps.restore-build-output.outputs.cache-hit != 'true'
-        uses: gradle/actions/setup-gradle@ac2d340dc04d9e1113182899e983b5400c17cda1 # v3.5.0
+        uses: gradle/actions/setup-gradle@v4.3.1
       - name: Gradle [${{ inputs.gradle_args }}]
         env:
           READ_TOKEN: ${{ secrets.read_token }}
